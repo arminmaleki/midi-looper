@@ -1,4 +1,4 @@
-import pdb
+import json
 import threading as th
 #Jack interface library,needs to be installed
 import jack
@@ -137,6 +137,37 @@ class Recorder:
             if recorder.recording:
                 recorder.recorded.append((
                     recorder.seq.calculate_beat_o(note[0]),(note[1][0],note[1][1],note[1][2]),note[2]))
+    @classmethod
+    def to_json(cls,file_name):
+       
+        recs=[]
+        for recorder in Recorder.recorders:
+            if (not recorder.empty):
+                recs.append(recorder.all_data())
+        all_data={'records':recs}
+        with open(file_name,'w') as f:
+            json.dump(all_data,f)
+
+    @classmethod
+    def from_json(cls,file_name,seq):
+        with open(file_name,'r') as f:
+            j=json.load(f)
+            for rec in j['records']:
+                new_rec=Recorder(seq)
+                for note in rec['notes']:
+                    new_rec.recorded.append(note)
+                    print (new_rec.recorded[-1])
+                new_rec.playing=rec['meta']['playing']
+                new_rec.volume=rec['meta']['volume']
+                new_rec.offset=rec['meta']['offset']
+                new_rec.bars=rec['meta']['bars']
+                new_rec.empty=False
+            
+        
+        
+            
+
+
     def __init__(self,seq):
         self.recorded=[]
         self.seq=seq
@@ -185,6 +216,12 @@ class Recorder:
         for note in self.recorded:
             print(note)
         print('number of bars:',self.bars)
+    def all_data(self):
+        me={}
+        me['meta']={'bars':self.bars,'offset':self.offset,'volume':self.volume,'playing':self.playing}
+        me['notes']=self.recorded
+        return me
+
             
 
         
@@ -290,6 +327,7 @@ with client:
     def handler(c,info):
         c.seqs[0].change_tempo((40+info))
     slot_vol=Controller('knob',0x03,[seq],'knob23')
+    
     @slot_vol.set_handler
     def handler(c,info):
         if (len(Recorder.recorders)==0):
@@ -388,8 +426,12 @@ with client:
     
     
     seq.activate()
-    
-    input()
+    Recorder.from_json('test.json',seq)
+  
+    s=input()
     seq.stop()
+    Recorder.to_json('test2.json')
+    input()
+    
 
     
