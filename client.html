@@ -1,0 +1,559 @@
+<html>
+  <head>
+    <style>
+      @font-face{
+	  font-family:digital;
+	  src: url(static/BALLSONTHERAMPAGE.ttf);
+	 
+      }
+      @font-face{
+	  font-family:filename;
+	   src: url(static/Impact.ttf);
+
+      }
+      div {font-family:digital;font-size:30px; padding:10px;}
+      
+      #slot_container{
+	  position:relative;
+	  width:500px;
+	  //height:200px;
+	  overflow:auto;
+      }
+      
+      div.main_div {
+	  position:absoulute;
+	  width: 100% ;//560px;
+	  height:100%;
+	  //height:650px;
+	  //background-color:#EDF;
+	  background-color: black; //#CBE;
+	  padding: 20px;
+	  border-radius:20px;
+	  box-shadow: inset -3px -3px 10px 10px #757;
+	  color:#858;
+	  
+		       
+      }
+      div.select_property{float:left;
+	  
+      }
+      div.select_property:active{background-color:blue;}
+     
+
+      div.slot_div{
+	  position:relative;
+	  //display: inline-block;
+	  float:left;
+	  width:90px;
+	  height:90px;
+	  padding:10px;
+	  margin:0px;
+	  background-color:#A9C;
+	  color:black;
+	  border-width: 4px;
+	  border-style:solid;
+	  border-color:black; //#CBE;
+	  border-radius:15px;
+	  box-shadow: inset 0px 0px 6px 6px #757;
+	  text-align:center;
+	  font-size:90px;
+	  color:#757;
+	  padding-top:10px;
+	  -moz-user-select:none;
+          -ms-user-select:none;
+          -webkit-user-select:none;
+	  
+		   
+      }
+     // #slot_container{
+//	  background-color:white;
+//	  overflow:auto;
+//	  border-radius:10px;
+//	  box-shadow: inset 0px 0px 5px 5px #EDF;
+//      }
+      div.slot_div:active{background-color:#00F;}
+      div.status_bar,div.midichannel,div.recording{
+	  font-family:digital;
+	  position:relative;
+	  width:calc(100%-20px);
+	  //padding:2px;
+	  margin:5px;
+	  margin-bottom:5px;
+	  //background-color:#FFF;
+	  //border-radius:0px;
+	  //box-shadow: 3px 3px 3px 3px #888888;
+	  font-size:55px;
+
+      }
+      div.recording{color:red;display:none;}
+      div.rec_active{display:block;}
+      div.midichannel{color:#388;margin-bottom:5px;padding-bottom:0px;padding-top:0px;}
+      div.description_bar,div.interact_select{
+	  position:relative;
+	  width:calc(100%-20px);
+	  //padding:2px;
+	  margin:5px;
+	  //margin-bottom:20px;
+	  //background-color:#FFF;
+	  //border-radius:0px;
+	  //box-shadow: 3px 3px 3px 3px #888888;
+	  overflow:auto;
+
+      }
+      
+      div.playing{background-color:#FBC;
+		  box-shadow: inset 0px 0px 6px 6px #F57;
+		  color: #FFDDEE;
+		 }
+      div.playing:active{background-color:red;}
+      div.selected{border-color:#0B6; border-style:solid;}
+      input,div.select_property,div.select_knob,div.interact_mode{
+	  font-family:digital;
+	   position:relative;
+	  //display: inline-block;
+	  float:left;
+	  //width:90px;
+	  //height:90px;
+	  padding:10px;
+	  margin:0px;
+	  background-color:#CBE;
+	  color:black;
+	  //border-width: 3px;
+	  //border-style:solid;
+	  border-color:#EDF;
+	  border-radius:15px;
+	  box-shadow: inset 0px 0px 6px 6px #757;
+	  text-align:center;
+	  font-size:20px;
+	  color:#757;
+	  border-width:0px;
+	  //padding-top:30px;
+	  border-radius:5px;margin:1px;
+
+      }
+      input[type=text]{ background-color:#FEF;font-family:filename;font-size:15px;}
+       div.sp_select{
+	   background-color: #AFC;
+	   color:red;
+
+	  box-shadow: inset 0px 0px 6px 6px #388;
+
+       }
+       div.select_property{height:30px;border-radius:5px;margin:1px;}
+       div.select_knob{box-shadow: inset 0px 0px 6px 6px #068; background-color:#4AC;color:white;
+		       font-size:30px;height:30px; border-radius:5px;}
+       div.select_knob:active,div.interact_mode:active{background-color:blue;margin:1px;}
+       div.locked{background:black;}
+								
+      </style>
+  </head>
+  <body>
+    <div class='main_div'>
+      <div class='status_bar'>
+	wellcome to midi-looper!
+      </div>
+      <div class='recording'>
+	Recording...
+	</div>
+      <div class='midichannel'>
+	CHANNEL 0 OF 7
+	</div>
+      
+      <div id='slot_container'>
+      </div>
+      <div class='description_bar'>
+	<div class='select_property sp_select'>
+	</div>
+		<div class='select_property'>
+		</div>
+			<div class='select_property'>
+			</div>
+				<div class='select_property'>
+	</div>
+		<div class='select_property'>
+		</div>
+			<div class='select_property'></div>
+			<div class='select_property'>
+			</div>
+			<div class='select_knob'>+</div>
+			<div class='select_knob'>-</div>
+      </div>
+      <div class='interact_select' style="clear:left;">
+	<div class='interact_mode sp_select'>
+	  TOGG.PLAY
+	</div>
+	<div class='interact_mode'>
+	  TOGG.GROUP
+	</div>
+	<div class='interact_mode'>
+	  CLONE
+	</div>
+	<div class='interact_mode'>
+	  SELECT
+	  </div>
+	</div>
+     <!-- <form action="/command/save" method="POST"> !-->
+	<div>
+	 <input id="save_fn" type="text" name="fname" value="song1.json">
+	 <input type="submit" value="SAVE" onclick="command_save()" ></div>
+	
+	<!--	</form> !-->
+      <!-- <form action="/command/load" method="POST"> !-->
+	<div style="clear:left;">
+	 <input id= "load_fn" type="text" name="fname" value="song1.json">
+	 <input type="submit" value="LOAD" onclick="command_load()"></div>
+	
+<!-- </form> !-->
+
+
+      
+      </div>
+  </body>
+  <script>
+    var slots_number=0;
+    var current_slot=0;
+    var slots={}
+    var first_req=true;
+    
+    function getel(str){return document.getElementsByClassName(str);}
+    function getelid(str){return document.getElementById(str);}
+    
+    function class_remove(str,cls){
+	var a=str.split(' ');
+	res="";
+	a.forEach(elem => {if (elem!=cls) {res+=elem;res+=" ";}})
+	return res;
+    }
+    function has(str,cls){
+	//console.log(str.split(' '));
+	a=str.split(' ');
+	res=false;
+	a.forEach((item)=>{if (item==cls) res=true});
+	return res;
+	//if (cls in str.split(' ')) return true;
+	//else return false;
+    }
+    var url=window.location.href;
+    var url_get_info=url+'get_info';
+    var url_all_info=url+'all_info'
+    console.log(url)
+    function xreq(req_url,callback,index){
+	var xhr=new XMLHttpRequest();
+	xhr.open('GET',req_url);
+	xhr.index=index;
+	xhr.send();
+	xhr.onload=callback;
+    }
+    function command_load(){console.log('load '+getelid('load_fn').value);
+			    xreq(url+'command/load/'+getelid('load_fn').value,null,0);
+			    
+
+			   }
+    function command_save(){console.log('save '+getelid('save_fn').value);
+			     xreq(url+'command/save/'+getelid('save_fn').value,null,0);
+			   }
+    ////////////////////////////////////////////////
+    var interact_mode=0;
+    var inter_divs=getel('interact_mode');
+    for (i=0;i<inter_divs.length;i++){
+	(   function(){
+	    var j=i;
+
+	    inter_divs[i].onclick=function(){console.log('intmod '+j);
+					     name=inter_divs[interact_mode].className;
+					     inter_divs[interact_mode].className=class_remove(name,'sp_select');
+					     interact_mode=j;
+					     inter_divs[interact_mode].className+=' sp_select';
+					    }})();
+    } 
+    console.log(getel('interact_mode'));
+		
+//    getel('interact_mode').forEach((item)=>{});
+//	(item,index)=>{
+//	    item.onclick=function(){console.log('intmod '+index);}
+	    
+//    });
+    ////////////////////////////////////////////////
+    var chan_tot=0;
+    var current_chan=0;
+    function chan_bar(){
+	getel('midichannel')[0].innerHTML="CHANNEL "+current_chan+" OF "+chan_tot;
+    }
+    /////////////////////////////////////////
+    var prop_divs=getel('select_property');
+    var select_knobs=getel('select_knob');
+    var prop_events=0;
+    var prop_select=0;
+    
+   function des_bar(){
+	var root=slots[current_slot][1].info.meta;
+	//	document.getElementsByClassName('description_bar')[0].innerHTML=
+	//   JSON.stringify(slots[current_slot][1].info.meta);
+       var divs=prop_divs;
+	divs[0].innerHTML="BARS: "+root.bars;
+	divs[1].innerHTML="OFFSET: "+root.offset;
+       divs[2].innerHTML="VOL: "+(Math.round(root.volume*100))/100;
+       divs[3].innerHTML="CHAN: -"
+       if ("channel" in root) divs[3].innerHTML="CHAN: "+root.channel;
+       
+       divs[4].innerHTML="OCT: -";
+       
+       divs[5].innerHTML="PITCH: -";
+       if ("pitch" in root) {
+	   divs[4].innerHTML="OCT: "+(root.pitch -root.pitch%12)/12;
+	   divs[5].innerHTML="PITCH: "+ root.pitch%12;}
+//		  getel('description_bar')[0].innerHTML="BARS: "+root.bars+"   OFFSET: "+
+       //		  root.offset+" VOL: "+(Math.round(root.volume*100)/100);
+       if (root.keep_offset)
+       {divs[6].innerHTML="KEEP"} else {divs[6].innerHTML="NOKEEP";}
+      
+
+   }
+    function prop_server(p_e,p_s){
+	if (prop_events>p_e) return;
+	console.log("prop server "+p_s+"  "+current_slot);
+	json=JSON.stringify(slots[current_slot][1].info.meta);
+	console.log(json);
+	xreq(url+'command/prop_update/'+current_slot+"/"+json,null,0);
+    }
+    function prop_click(i){console.log('prop click',i);
+			   //var prop_divs=getel('select_property');
+			   prop_divs[prop_select].className=
+			   class_remove(prop_divs[prop_select].className,'sp_select');
+			   prop_divs[i].className+=" sp_select";
+			   prop_select=i;
+			   //prop_events+=1;
+			  
+			   
+
+			  }
+    function select_knob_click(i){
+	inc=1-i*2;
+	var root=slots[current_slot][1].info.meta;
+	prop_events+=1;
+	var jj=prop_events;
+	var kk=prop_select;
+	console.log('dsfsdfd ' +jj+" "+kk);
+	switch(prop_select){
+	case 0:
+	    root.bars+=inc;
+	    break;
+	case 1:
+	    root.offset+=inc;
+	    if (root.offset>=root.bars) root.offset=0;
+	    if (root.offset<0) root.offset=root.bars-1;
+	    break
+	case 2:
+	    root.volume+=inc*0.1;
+	    if (root.volume>2) root.volume=2.0;
+	    if (root.volume<0) root.volume=0;
+	    break;
+	case 3:
+	    if (!('channel' in root)) {root.channel=0;break;}
+	    root.channel+=inc;
+	    if (root.channel>=chan_tot) root.channel=0;
+	    if (root.channel<=0) root.channel=chan_tot-1;
+	    break;
+	case 4:
+	    if (!('pitch' in root)) {root.pitch=0;break;}
+	    root.pitch+=inc*12;
+	    break;
+	case 5:
+	    if (!('pitch' in root)) {root.pitch=0;break;}
+	    root.pitch+= inc;
+	   
+	    break;
+	case 6:
+	    root.keep_offset=!root.keep_offset;
+	    break;
+	    
+	    
+	    
+	    
+	    
+	}
+	des_bar();
+	setTimeout(()=>{prop_server(jj,kk);},1000);
+    }
+   
+    for (var i=0;i<prop_divs.length;i++)
+	(function(){var j=i;
+	
+		    prop_divs[j].onclick=function(){prop_click(j);};})();
+     for (var i=0;i<select_knobs.length;i++)
+	(function(){var j=i;
+	
+	    select_knobs[j].onclick=function(){select_knob_click(j);};})();
+////////////////////////////////////////////////	  
+	     
+   
+    function change_slot(new_slot){
+	
+	slots[current_slot][0].className=class_remove(slots[current_slot][0].className,"selected");
+	//slots[new_slot].className=class_remove(slots[current_slot].className,"selected");
+	slots[new_slot][0].className+=" selected";
+	current_slot=new_slot;
+	console.log('current slot '+current_slot);
+	des_bar();
+
+	
+    }
+    function toggle_play(index,status){
+	var div=slots[index][0];
+	if (status){
+	    
+	    div.className+=" playing";
+	     // div.innerHTML="&#9654";
+	}
+	else {div.className=class_remove(div.className,'playing');
+	      //console.log('removed:',div.class
+	      //div.innerHTML=""
+	      ;}
+	slots[index][1].info.meta.playing=status;
+	des_bar();
+    }
+    function command_toggle_play(index){
+	console.log('togle play command!'+index);
+	slots[index][0].className+=" locked"
+	console.log('locked'+index);
+	var xhr=new XMLHttpRequest();
+	var req_url=url+'command/toggle_play/'+index;
+	xhr.open('GET',req_url);
+	xhr.index=index;
+	xhr.send();
+	xhr.onload=function(){slots[this.index][0].className=class_remove(slots[this.index][0].className,'locked');console.log('unlocked '+this.index);}
+    }
+    function command_clone(id){
+	console.log('cloning '+id);
+	xreq(url+'command/clone/'+id);
+	slots[id][0].className=class_remove(slots[id][0].className,'locked');
+    }
+    function command_select(id){
+	xreq(url+'command/select/'+id);
+    }
+ 
+    function construct_slot(item){
+	
+	console.log('construct_slot');
+	var div=document.createElement("DIV");
+	
+	div['id']=item['index'];
+	div.innerHTML=""+item['index'];
+	div.className='slot_div';
+	slots[div.id]=[div,item];
+	if (item.info.meta.playing) toggle_play(item['index'],true);
+	
+	div.onclick=function(){
+	    
+	    console.log('className '+this.className);
+
+	    if (has(this.className,'locked')) {
+	    console.log('locked!');
+
+		return;}
+	    switch(interact_mode){
+		case 0:
+		command_toggle_play(this['id']);
+		break;
+		case 1:
+		break;
+		case 2:
+		this.className+=' locked';
+		var j=this['id'];
+		setTimeout(function(){command_clone(j)},500);
+		break;
+	    case 3:
+		change_slot(this['id']);
+		command_select(this['id']);
+		
+	    }
+	}
+	//document.getElementsByClassName('main_div')[0].appendChild(div);
+	getelid('slot_container').appendChild(div);
+	slots_number+=1;
+	
+	
+    }
+    
+    
+   
+    function periodic_onload(){
+	//console.log('did the request');
+	//console.log(this.status);
+	//console.log(xhr.response);
+	//alert('done!');
+	obj=JSON.parse(this.response);
+	obj['reply'].forEach(item =>{
+	    console.log(item);
+	    switch (item['event']){
+	    case 'new_record':
+		construct_slot(item);
+		
+		    
+		break;
+	    case 'slot_change':
+		change_slot(item['number']);
+		break;
+	    case 'recorded':
+		if (item['index']>=slots_number) {construct_slot(item);
+						  console.log(item['index']+" new "+slots_number);
+						  change_slot(item['index']);
+						 }
+		else{
+		    slots[item['index']][1]=item;
+		    des_bar();}
+		//construct_slot(item);
+		//change_slot(item['index']);
+		break;
+	    case 'toggle_play':
+		toggle_play(item['index'],item['status']);
+		slots[item['index']][1].info.meta.offset=item.offset;
+		des_bar();
+		break;
+	    case 'new_channels':
+		chan_tot=item['number'];
+		console.log('new channels: '+chan_tot);
+		chan_bar();
+		break;
+	    case 'channel_change':
+		current_chan=item['number'];
+		chan_bar();
+		break;
+	    case 'recording':
+		if (item['status']) getel('recording')[0].className+=' rec_active';
+		else  getel('recording')[0].className=class_remove( getel('recording')[0].className
+								   ,'rec_active');
+		break;
+		
+		
+	    }
+	  
+	});
+	//if (first_req) change_slot(0);
+	first_req=false;
+	
+	
+    }
+    function periodic_request(n){
+	var xhr=new XMLHttpRequest();
+	var req_url=url_get_info;
+	if (n==0) req_url=url_all_info;
+	xhr.open('GET',req_url);
+	xhr.onload=periodic_onload;
+	xhr.send();
+	setTimeout(function(){periodic_request(n+1);},600);
+	//console.log('periodic request '+req_url);
+	
+    }
+    periodic_request(0);
+
+    //xhr=new XMLHttpRequest();
+    //xhr.open('GET',url_get_info);
+    //xhr.responseType='json';
+     
+    
+    //xhr.send();
+ 
+  
+    </script>
+  </html>
