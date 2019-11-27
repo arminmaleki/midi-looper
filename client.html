@@ -19,11 +19,17 @@
 	  //height:200px;
 	  overflow:auto;
       }
+      #group_container{
+	  position:relative;
+	  width:350px;
+	  overflow:auto;
+      }
+      
       
       div.main_div {
 	  position:absoulute;
 	  width: 100% ;//560px;
-	  height:100%;
+	  min-height:100%;
 	  //height:650px;
 	  //background-color:#EDF;
 	  background-color: black; //#CBE;
@@ -31,7 +37,7 @@
 	  border-radius:20px;
 	  box-shadow: inset -3px -3px 10px 10px #757;
 	  color:#858;
-	  
+	  overflow:auto;
 		       
       }
       div.select_property{float:left;
@@ -72,7 +78,7 @@
 //	  box-shadow: inset 0px 0px 5px 5px #EDF;
 //      }
       div.slot_div:active{background-color:#00F;}
-      div.status_bar,div.midichannel,div.recording{
+      div.status_bar,div.midichannel,div.recording,div.group{
 	  font-family:digital;
 	  position:relative;
 	  width:calc(100%-20px);
@@ -83,6 +89,19 @@
 	  //border-radius:0px;
 	  //box-shadow: 3px 3px 3px 3px #888888;
 	  font-size:55px;
+
+      }
+      div.group{
+	  box-shadow: 3px 3px 3px 3px #888888;
+	  border-radius:5px;
+	  font-size:20px;
+	  overflow:auto;
+	  padding:2px;
+	  clear:left;
+	  
+      }
+      div.group.selected{
+	  box-shadow: 3px 3px 3px 3px #AFC;
 
       }
       div.recording{color:red;display:none;}
@@ -107,7 +126,7 @@
 		 }
       div.playing:active{background-color:red;}
       div.selected{border-color:#0B6; border-style:solid;}
-      input,div.select_property,div.select_knob,div.interact_mode{
+      input,div.select_property,div.select_knob,div.interact_mode,div.new_group{
 	  font-family:digital;
 	   position:relative;
 	  //display: inline-block;
@@ -144,6 +163,15 @@
 		       font-size:30px;height:30px; border-radius:5px;}
        div.select_knob:active,div.interact_mode:active{background-color:blue;margin:1px;}
        div.locked{background:black;}
+       span.g_remove{float:right;color:red;font-size:20px;}
+       span.g_enabled,span.g_disabled,span.g_elements,span.g_elements,span.g_c,span.g_x{
+	   float:left;color:#F57;font-size:45px;margin-right:20px;margin-left:20px;}
+       span.g_disabled{color:gray;}
+       span.g_elements{color:#CBE;}
+       span.g_c{color:#068;}
+       span.g_x{color:#CC7;}
+       
+       
 								
       </style>
   </head>
@@ -161,6 +189,7 @@
       
       <div id='slot_container'>
       </div>
+      PROPERTIES <br>
       <div class='description_bar'>
 	<div class='select_property sp_select'>
 	</div>
@@ -178,6 +207,8 @@
 			<div class='select_knob'>+</div>
 			<div class='select_knob'>-</div>
       </div>
+      <br>
+      INTERACTION
       <div class='interact_select' style="clear:left;">
 	<div class='interact_mode sp_select'>
 	  TOGG.PLAY
@@ -191,9 +222,22 @@
 	<div class='interact_mode'>
 	  SELECT
 	  </div>
+      </div>
+      <br>
+      GROUPS
+      <div id="group_container" style='clear:left'>
+	<div class='new_group'  onclick="addgroup({'type':'c'})" style='margin-bottom:10px;'>
+	NEW C GROUP
+	</div> 
+	<div class='new_group'  onclick="addgroup({'type':'x'})" style='margin-bottom:10px;'>
+	NEW X GROUP
+      </div>
+<!--	<div class='group selected' style='clear:left; margin-bottom:10px;'>
+	  it's a group div
+	  </div> !-->
 	</div>
      <!-- <form action="/command/save" method="POST"> !-->
-	<div>
+	<div style='clear:left'>
 	 <input id="save_fn" type="text" name="fname" value="song1.json">
 	 <input type="submit" value="SAVE" onclick="command_save()" ></div>
 	
@@ -214,7 +258,7 @@
     var current_slot=0;
     var slots={}
     var first_req=true;
-    
+    var slots_already=0;
     function getel(str){return document.getElementsByClassName(str);}
     function getelid(str){return document.getElementById(str);}
     
@@ -244,8 +288,11 @@
 	xhr.send();
 	xhr.onload=callback;
     }
-    function command_load(){console.log('load '+getelid('load_fn').value);
+    function command_load(){
+	slots_already=slots_number;
+	console.log('load '+getelid('load_fn').value);
 			    xreq(url+'command/load/'+getelid('load_fn').value,null,0);
+			    
 			    
 
 			   }
@@ -384,9 +431,139 @@
 	(function(){var j=i;
 	
 	    select_knobs[j].onclick=function(){select_knob_click(j);};})();
-////////////////////////////////////////////////	  
-	     
-   
+    ////////////////////////////////////////////////
+    var groups={};
+    var groups_number=0;
+    var current_group=-1,current_group_div;
+    function slot_group_toggle(id){
+	if (!(current_group in groups)) return;
+	if (groups[current_group][1].elements.indexOf(id)>=0) {
+	    console.log(groups[current_group][1].elements);
+	    aux=[];
+	    groups[current_group][1].elements.forEach(
+		(item)=>{
+		    //console.log('here!');
+		    if (item!=""+id) {aux.push(item);
+				     // console.log("dfdgd"+id+' '+item);
+				     }
+		}
+	);
+	    groups[current_group][1].elements=aux;
+
+	}
+	else
+	{
+	    groups[current_group][1].elements.push(id);
+	}
+	groups[current_group][1].elements.sort();
+	groups[current_group][0].getElementsByClassName('g_elements')[0].innerHTML
+	    =groups[current_group][1].elements.join();
+	group_server();
+    }
+    function select_group(){
+	console.log(this);
+	console.log(current_group);
+	str=this.className
+	if (has(str ,'selected')) return;
+	this.className+=' selected';
+	if (current_group in groups)
+	groups[current_group][0].className=
+	    class_remove(groups[current_group][0].className,'selected');
+	current_group=this.ind;
+	
+	
+	
+	
+	
+	
+	
+    }
+    function remove_group(g){
+	if (current_group in groups)
+	groups[current_group][0].className=
+	    class_remove(groups[current_group][0].className,'selected');
+	groups[g][0].remove();
+	delete(groups[g]);
+	current_group=-1;
+	group_server();
+    }
+    function toggle_enable(g){
+	groups[g][1].enabled=!groups[g][1].enabled;
+	if (groups[g][1].enabled)
+	    groups[g][0].getElementsByClassName('g_disabled')[0].className='g_enabled';
+	else
+	    groups[g][0].getElementsByClassName('g_enabled')[0].className='g_disabled';
+	group_server();
+
+    }
+    function addgroup(g){
+	//getelid('group_container').innerHTML+=
+	//    "<div class='group'> <span style='color:green'>"+gtype+" </span> group div </div>";
+	//var group_divs=getelid('group_container').getElementsByClassName('group');
+	//console.log(group_divs);
+	//var new_div=group_divs[group_divs.length-1];
+	//groups[groups_number]={};
+	//groups[groups_number].div=new_div;
+	//groups[groups_number].type=gtype;
+	//new_div.ind=groups_number;
+	////new_div.onclick=select_group;
+	////new_div.onclick();
+	//groups_number+=1;
+	var cont=getelid('group_container');
+	var div=document.createElement('DIV');
+	div.className='group selected';
+	if (! ('enabled' in g)) 	g.enabled=true;
+	if (! ('elements' in g)) g.elements=[];
+	if (g.type=='c')
+	    div.innerHTML='<span class="g_c"> C </span>';
+	else
+	    div.innerHTML='<span class="g_x"> x </span>';
+	console.log(g);
+
+
+	var s="";
+	if (g.enabled==true)
+	{s+=' <span class="g_enabled" ';
+	 //console.log('e true'+div.innerHTML);
+
+	}
+	else
+	{ s+=' <span class="g_disabled" ';
+	  //console.log('e false');
+
+	}
+	
+        div.innerHTML+=s+'onclick="toggle_enable('+groups_number+')">*</span><span class="g_elements">'+g.elements.join()+'</span>';
+	div.innerHTML+=' <span class="g_remove" onclick="remove_group('+groups_number+')"> X </span>';
+	div.ind=groups_number;
+	
+	div.onclick=select_group;
+	//var g={}
+
+
+	
+	groups[div.ind]=[div,g]
+	if (groups_number>0)
+	cont.children[cont.childElementCount-1].className='group';
+	cont.appendChild(div);
+	current_group=groups_number;
+	groups_number+=1;
+	group_server();
+
+    }
+    function group_server(){
+	res=[]
+	
+
+	 
+	for ( k in groups)
+	    if (k)
+		res.push(groups[k][1]);
+	json=JSON.stringify(res);
+	console.log(json);
+	xreq(url+'command/groups_update/'+json,null,0);
+    }
+///////////////////////////////////////////////   
     function change_slot(new_slot){
 	
 	slots[current_slot][0].className=class_remove(slots[current_slot][0].className,"selected");
@@ -455,7 +632,8 @@
 		case 0:
 		command_toggle_play(this['id']);
 		break;
-		case 1:
+	    case 1:
+		slot_group_toggle(this['id']);
 		break;
 		case 2:
 		this.className+=' locked';
@@ -524,6 +702,23 @@
 		else  getel('recording')[0].className=class_remove( getel('recording')[0].className
 								   ,'rec_active');
 		break;
+	    case 'groups':
+		//item.info.forEach((g,j)=>{
+		//    var elem_new=[];
+		    
+		//    g.elements.forEach((e,i)=>{elem_new.push=e+slots_already;})
+		    
+		//    item.info[j]={'type':g.type,'enabled':g.enabled,'elements':elem_new};
+		//    console.log(item.info[j]);
+
+		//	})
+		console.log(slots_already);
+		for (var i=0;i<item['info'].length;i++)
+		    for (var j=0;j<item['info'][i]['elements'].length;j++)
+			item.info[i].elements[j]+=slots_already;
+		console.log(item.info);
+		item['info'].forEach(addgroup);
+		break;
 		
 		
 	    }
@@ -541,7 +736,7 @@
 	xhr.open('GET',req_url);
 	xhr.onload=periodic_onload;
 	xhr.send();
-	setTimeout(function(){periodic_request(n+1);},600);
+	setTimeout(function(){periodic_request(n+1);},100);
 	//console.log('periodic request '+req_url);
 	
     }

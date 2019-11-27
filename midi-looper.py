@@ -32,7 +32,7 @@ class Controller:
     pads={}
     knobs={}
     by_name={}
-    
+    last_midi=-1
     def __init__(self,ctype,ccode,seqs,name='untitled'):
         if (ctype=='knob'):
             Controller.knobs[ccode]=self;
@@ -78,6 +78,7 @@ def process(frames):
     for offset, data in inports[0].incoming_midi_events():
         #print("{0}: {1} 0x{2}".format(client.last_frame_time,offset,binascii.hexlify(data).decode()))
         status, pitch, vel = struct.unpack('3B', data)
+        Controller.last=pitch
         if (status==0xb0):
             if (pitch in Controller.knobs):
                 Controller.knobs[pitch].handler(vel)
@@ -85,9 +86,96 @@ def process(frames):
         if (pitch in Controller.pads):
             Controller.pads[pitch].handler((status,vel))
 
-        if ((status==0x80) or (status==0x90)):
+        elif ((status==0x80) or (status==0x90)):
             outports[get_live_port()].write_midi_event(offset,(status,pitch,vel))
             Recorder.new_note((offset+client.last_frame_time,(status,pitch,vel),get_live_port()))
+##########################################################################
+def gr_recur(gr,actual,slot,depth):
+    print('depth '+str(depth)+' slot '+str(slot)+' value '+str(actual[slot]))
+    print(actual)
+    pre_map={}
+    err=False
+    
+        
+    touched_list={}
+
+    gr_slot=[]
+    dest_stat=not actual[slot]
+    
+    for g in gr:
+        if (g['enabled']):
+            if (slot in g['elements']):
+                gr_slot.append(g)
+    print (gr_slot)
+
+    for g in gr_slot:
+        if (g['type']=='c'):
+            for s in g['elements']:
+                if (s!=slot):
+                    pre_map[s]=dest_stat
+                    touched_list[s]=dest_stat
+        if (g['type']=='x' and dest_stat==True):
+            for s in g['elements']:
+                if (s!=slot):
+                    pre_map[s]=False
+                    if (s in touched_list):
+                        print('conflict in flip list!')
+                        err=True
+                        return [],err
+                    touched_list[s]=False
+    for g in gr:
+        if (len(g['elements'])>0):
+            if (g['elements'][0]==slot and g['type']=='ms'):
+                pre_map[g['elements'][1]]=not dest_stat
+                if (g['elements'][1] in touched_list):
+                    if not (touched_list[g['elements'][1]] == (not dest_stat)):
+                        err=True
+                        return [],err
+                touched_list[g['elements'][1]]=not dest_stat
+                
+
+    
+    print(pre_map)
+    res=[]
+    for s in actual:
+        res.append(s)
+    for m in pre_map:
+        res[m]=pre_map[m]
+    print("depth: "+str(depth)+"res: "+str(res))
+
+    flip_list=[]
+
+    for i in range(len(actual)):
+        if (not((res[i] and actual[i])or(not res[i] and not actual[i]))):
+            flip_list.append(i)
+    print("depth: "+str(depth)+" flip_list: "+str(flip_list))
+
+    actual[slot]=not actual[slot]
+    depth-=1
+    if (depth<0 or len(flip_list)==0):
+        return flip_list,err
+
+    flip_list_new=[]
+
+    #for fl in flip_list:
+    #    flip_list_new.append(fl)
+        
+
+    for flip in flip_list:
+        if flip in flip_list_new:
+            continue
+        flip_list_new.append(flip)
+        fl_new,err_new =gr_recur(gr,actual,flip,depth)
+        if err_new:
+            err=True
+            break
+        for fl in fl_new:
+            if fl in flip_list_new:
+                err=True
+                break
+            flip_list_new.append(fl)
+            
+    return flip_list_new,err
 
 ##########################################################################            
 ###### defines the sequencer, how it interacts with recorders and metronom
@@ -182,16 +270,33 @@ def define_controllers():
     def handler(c,info):
         if ((info>0)):
             print ('current slot:',get_current_slot(),'volume:',current_rec().volume)
-            if (not current_rec().keep_offset):
-                current_rec().offset=((current_rec().seq.processed_beat)//4)%current_rec().bars
-            current_rec().playing=not current_rec().playing
+            #tog_list=Recorder.tog_list()
+            #print('tog_list: '+tog_list)
+            actual=[]
+            for rec in Recorder.recorders:
+                actual.append(rec.playing)
+            flip_list,err=gr_recur(Recorder.groups,actual,get_current_slot(),4)
+            if err :
+                print ('slot_play ERROR. canceled')
+                return
+            print ("FLIP_LIST "+str(flip_list))
             
-            gui.message({"event":"toggle_play",
-                         "index":current_rec().index,
-                         "offset":current_rec().offset,
-                         "status":current_rec().playing,
-                         "text":gui.Color.YELLOW+str(get_current_slot())+"playing "+
-                         str(current_rec().playing)+" volume "+str(current_rec().volume)+gui.Color.CLOSE
+            flip_list.append(get_current_slot())
+            
+            for slot_number in flip_list:
+                current_r=Recorder.recorders[slot_number]
+                
+                if (not current_r.keep_offset):
+                    current_r.offset=((current_r.seq.processed_beat)//4)%current_r.bars
+                    
+                current_r.playing=not current_r.playing
+            
+                gui.message({"event":"toggle_play",
+                             "index":current_r.index,
+                             "offset":current_r.offset,
+                             "status":current_r.playing,
+                             "text":gui.Color.YELLOW+str(slot_number)+"playing "+
+                             str(current_r.playing)+" volume "+str(current_r.volume)+gui.Color.CLOSE
                 })
 
     slot_plus=Controller('knob',0x13,[seq],'portp')
@@ -239,6 +344,11 @@ def full_report():
                     "number":get_current_slot(),
                     "text":
                     gui.Color.YELLOW+"Active slot changed to "+str(get_current_slot())+gui.Color.CLOSE})
+    res.append({"event":"groups","subevent":"json","info":Recorder.groups,
+                "text":
+                gui.Color.YELLOW+"groups loaded"+gui.Color.CLOSE
+            })
+        
     print(res)
 
     return res
@@ -350,6 +460,33 @@ with client:
             set_current_slot(index)
             print('slot changed to '+str(get_current_slot()))
             return "success"
+        @app.route('/command/groups_update/<string:jstring>',methods=['GET'])
+        def command_groups_update(jstring):
+            print('groups:')
+            Recorder.groups=json.loads(jstring)
+            for g in Recorder.groups:
+                for i in range(len(g['elements'])):
+                    g['elements'][i]=int(g['elements'][i])
+            print(Recorder.groups)
+            return 'succes'
+        
+        @app.route('/command/set_pad/<int:index>',methods=['GET'])
+        def command_set_pad(index):
+            #print('toggle play'+str(index))
+            #time.sleep(1.0);
+            midi_local=Controller.last_midi
+            slot_midi=Controller('pad',Controller.last_midi,[seq],'portp')
+            @slot_midi.set_handler
+            def handler(c,info):
+                s=get_current_slot()
+                set_current_slot(index)
+                Controller.by_name['slot_play'].handler(1)
+                set_current_slot(s)
+                print('midi pad control' + str(midi_local))
+                
+            
+
+            
                   
         app.run(host='0.0.0.0',port=8080)
         

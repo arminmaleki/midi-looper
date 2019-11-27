@@ -6,6 +6,7 @@ current_slot=-1
 class Recorder:
     """ records and archives played notes when necessary, to be replayed later """
     recorders=[]
+    groups=[]
     @classmethod
     def new_note(cls,note):
         """this function is called in jack loop. informs Recorder class that something new is available"""
@@ -20,7 +21,7 @@ class Recorder:
         for recorder in Recorder.recorders:
             if (not recorder.empty):
                 recs.append(recorder.all_data())
-        all_data={'records':recs}
+        all_data={'records':recs,'groups':Recorder.groups}
         with open(file_name,'w') as f:
             json.dump(all_data,f)
         gui.message({"event":"saved",
@@ -45,11 +46,18 @@ class Recorder:
                     print("FROM JSON "+str(key)+" "+str(rec['meta'][key]))
                     new_rec.__dict__[key]=rec['meta'][key]
                 new_rec.empty=False
+            
                 gui.message({"event":"new_record","subevent":"json","info":new_rec.all_data(),
                              "index":new_rec.index,
                              "text":
                              gui.Color.BLUE+"New record from json  "+str(new_rec.index)+gui.Color.CLOSE
                 })
+            Recorder.groups=j['groups']
+            gui.message({"event":"groups","subevent":"json","info":Recorder.groups,
+                         
+                         "text":
+                         gui.Color.YELLOW+"groups loaded"+gui.Color.CLOSE
+            })
 
     def __init__(self,seq):
         self.recorded=[]
@@ -145,22 +153,46 @@ class Recorder:
         r=Recorder(orig.seq)
         for note in orig.recorded:
             r.recorded.append(note)
-        me['meta']={'bars':self.bars,'offset':self.offset,'volume':self.volume,'playing':self.playing}
+        
         r.bars=orig.bars
         r.offset=orig.offset
         r.volume=orig.volume
         
         if ('channel' in orig.__dict__):
-            r['channel']=orgi.channel;
+            r.channel=orig.channel;
         if ('pitch' in orig.__dict__):
-            r['pitch']=orig.pitch;
+            r.pitch=orig.pitch;
         if ('keep_offset' in orig.__dict__):
-            r['keep_offset']=orig.keep_offset;
+            r.keep_offset=orig.keep_offset;
         r.empty=False;
         gui.message({"event":"recorded","info":r.all_data(),
                              "index":r.index,
                              "text":
                      gui.Color.BLUE+"Slot "+str(ind)+" cloned "+gui.Color.CLOSE})
+        def tog_list(self):
+            dest_stat=not Recorder.recorders[current_slot].playing
+            
+            gr=[]
+            for g in Recorder.groups:
+                if (current_slot in g['members']):
+                    gr.append(g)
+
+            
+
+            
+
+
+                                   
+            
+            
+                               
+                        
+                    
+                    
+
+                    
+            
+            
         
 
             
